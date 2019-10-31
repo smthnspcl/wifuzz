@@ -2,6 +2,10 @@
 ### why?
 wanted my own wireless fuzzer
 
+### whats inside?
+scapy for packet generation / sending<br>
+netifaces to automatically get a wifi interface if none supplied
+
 ### how to ...
 #### ... get started
 ```shell script

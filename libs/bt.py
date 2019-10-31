@@ -6,15 +6,17 @@ from scapy.layers.bluetooth import *
 
 class BluetoothFuzzer(Fuzzer):
 
+    sock = None
     targets = []
     frame_combos = [
         [None, HCI_Hdr, HCI_Command_Hdr]
     ]
 
-    def __init__(self):
-        Fuzzer.__init__(self)
+    def run(self) -> None:
         self.sock = BluetoothHCISocket()
         self.f_send = self.sock.send
+        for t in self.targets:
+            self.fuzz(t)
 
     def stop(self):
         self.do_run = False

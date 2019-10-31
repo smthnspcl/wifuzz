@@ -21,6 +21,9 @@ if __name__ == '__main__':
             # todo: collect macs and add to targets
         if c.wifi:
             from libs import WiFiScanner, set_monitor_mode
-            set_monitor_mode("")
-            wts = WiFiScanner()
+            if not c.iface_wl:
+                print("no wifi interface found")
+                exit()
+            set_monitor_mode(c.iface_wl)
+            wts = WiFiScanner(c.iface_wl)
             wts.start()

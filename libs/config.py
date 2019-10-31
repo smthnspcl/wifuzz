@@ -1,3 +1,6 @@
+from .wifi import get_interface as get_wifi_interface
+
+
 class Configuration(object):
     targets = []
     wifi = False
@@ -43,6 +46,8 @@ class Configuration(object):
             self.help()
         self.targets = self.filter_duplicates(self.targets)
         self.devices = self.filter_duplicates(self.devices)
+        if self.iface_wl is None:
+            self.iface_wl = get_wifi_interface()
 
     @staticmethod
     def parse(args):
