@@ -12,8 +12,12 @@ class Fuzzer(Runnable):
     ]
     '''
     frame_combos = []
-
     f_send = send
+    iface = None
+
+    def __init__(self, iface=None):
+        Runnable.__init__(self)
+        self.iface = iface
 
     def fuzz(self, target):
         for fc in self.frame_combos:

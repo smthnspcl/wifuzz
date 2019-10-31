@@ -7,7 +7,7 @@ class ADB(Runnable):
     device = None
     crash_callback = None
 
-    def __init__(self, device, crash_callback=None):
+    def __init__(self, device=None, crash_callback=None):
         Runnable.__init__(self)
         self.device = device
         self.crash_callback = crash_callback

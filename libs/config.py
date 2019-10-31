@@ -10,7 +10,7 @@ class Configuration(object):
     devices = []
 
     iface_bt = 0
-    iface_wl = "wlan0"
+    iface_wl = None
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -48,6 +48,7 @@ class Configuration(object):
         self.devices = self.filter_duplicates(self.devices)
         if self.iface_wl is None:
             self.iface_wl = get_wifi_interface()
+        # todo: check if bluetooth interface exists / find one
 
     @staticmethod
     def parse(args):

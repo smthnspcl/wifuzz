@@ -1,8 +1,10 @@
 from .fuzzer import Fuzzer
 from .scanner import Scanner
 
-from subprocess import check_output
+from os import system
+from time import sleep
 from scapy.layers.dot11 import *
+from scapy.all import AsyncSniffer
 from netifaces import interfaces
 
 
@@ -14,16 +16,15 @@ def get_interface():
 
 
 def set_monitor_mode(interface, enable=True):
-    print(check_output(["ip", "link", "set", "dev", interface, "down"]))
+    system("ip link set dev %s down" % interface)
     if enable:
-        print(check_output(["iwconfig", interface, "mode", "monitor"]))
+        system("iwconfig %s mode monitor" % interface)
     else:
-        print(check_output(["iwconfig", interface, "mode", "managed"]))  # or auto
-    print(check_output(["ip", "link", "set", "dev", interface, "up"]))
+        system("iwconfig %s mode managed" % interface)  # managed or auto for normal
+    system("ip link set dev %s up" % interface)
 
 
 class WiFiFuzzer(Fuzzer):
-    # iface = "wlp13s0"
     targets = ["dc:0b:34:c4:8c:06"]
     frame_combos = [
         [Dot11Beacon, Dot11Elt],
@@ -33,10 +34,17 @@ class WiFiFuzzer(Fuzzer):
 
 
 class WiFiScanner(Scanner):
-    iface = "wlan0"
+    daemon = False
+    do_run = True
 
     def callback(self, pdu):
-        print(pdu.summary())
+        a = pdu.addr1
+        print(a)
+        if a not in self.found:
+            self.found.append(a)
 
     def run(self):
-        sniff(iface=self.iface, prn=self.callback)
+        a = AsyncSniffer(iface=self.iface, prn=self.callback)
+        while self.do_run:
+            sleep(1)  # be nice to the cpu
+        a.stop()
