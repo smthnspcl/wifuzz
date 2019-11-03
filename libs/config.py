@@ -3,16 +3,19 @@ from .bt import get_interface as get_bt_interface
 
 
 class Configuration(object):
-    targets = []
     wifi = False
     bt = False
     scan = False
+    mac_lookup = False
+
     adb = False
     devices = []
-    mac_lookup = False
 
     iface_bt = None
     iface_wl = None
+
+    targets_bt = []
+    targets_wifi = []
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -25,13 +28,18 @@ class Configuration(object):
         print("\t-a\t--adb\t\tuse adb")
         print("\t-d\t--device\tadb transport id")
         print("\t\t--devices\ttid1,tid2,tid5")
-        print("\t-t\t--target\tfe:ed:de:ad:be:ef")
-        print("\t\t--targets\tde:ad:be:ef:b0:ff,c0:33:b3:ff:ee:33")
         print("\t-w\t--wifi\t\tuse wifi")
         print("\t-b\t--bt\t\tuse bluetooth")
+        print("\t-t\t--target\tfe:ed:de:ad:be:ef")
+        print("\t\t--targets\tde:ad:be:ef:b0:ff,c0:33:b3:ff:ee:33")
         print("\t-i\t--interface\tcall supply after -w/-b")
         print("\t-s\t--scan\t\tscan for mac addresses/targets")
         print("\t-m\t--mac-lookup\tlookup mac vendors")
+        print("examples:")
+        print("sudo ./wifuzz.py -a -w -t ff:ee:ee:dd:be:ef")
+        print("sudo ./wifuzz.py -m -s -w -b -a")
+        print("sudo ./wifuzz.py -w --targets fe:ee:ed:de:ea:ad,be:ee:ef:66:66:66 -w -i wlan0 -b -i hci0 -b \\"
+              "                 42:00:66:66:66:66 -a -d 7ee96662")
         exit()
 
     @staticmethod
@@ -45,9 +53,10 @@ class Configuration(object):
     def check(self):
         if not self.wifi and not self.bt:
             self.help()
-        if len(self.targets) == 0 and not self.scan:
+        if (len(self.targets_wifi) + len(self.targets_bt)) == 0 and not self.scan:
             self.help()
-        self.targets = self.filter_duplicates(self.targets)
+        self.targets_wifi = self.filter_duplicates(self.targets_wifi)
+        self.targets_bt = self.filter_duplicates(self.targets_bt)
         self.devices = self.filter_duplicates(self.devices)
         if self.iface_wl is None:
             self.iface_wl = get_wifi_interface()
@@ -61,9 +70,15 @@ class Configuration(object):
         while i < len(args):
             a = args[i]
             if a in ["-t", "--target"]:
-                _c.targets.append(args[i + 1])
+                if args[i - 1] in ["-b", "--bt"]:
+                    _c.targets_bt.append(args[i + 1])
+                elif args[i - 1] in ["-w", "--wifi"]:
+                    _c.targets_wifi.append(args[i + 1])
             elif a in ["--targets"]:
-                _c += args[i + 1].split(",")
+                if args[i - 1] in ["-b", "--bt"]:
+                    _c.targets_bt += args[i + 1].split(",")
+                elif args[i - 1] in ["-w", "--wifi"]:
+                    _c.targets_wifi += args[i + 1].split(",")
             elif a in ["-s", "--scan"]:
                 _c.scan = True
             elif a in ["-w", "--wifi"]:

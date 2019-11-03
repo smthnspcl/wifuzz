@@ -32,6 +32,11 @@ usage: ./wifuzz.py {arguments}
 		--devices	tid1,tid2,tid5
 	-m	--mac-lookup	lookup macs
 ex:
-sudo ./wifuzz.py -s -w -i wlp13s0
+sudo ./wifuzz.py -m -s -w
 ```
+### notes
+#### interfaces are found automatically
+though the first available is always used<br>
+ex: wlan0; hci0
 
+#### 
