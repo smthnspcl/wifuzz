@@ -8,6 +8,7 @@ class Configuration(object):
     scan = False
     adb = False
     devices = []
+    mac_lookup = False
 
     iface_bt = 0
     iface_wl = None
@@ -22,13 +23,14 @@ class Configuration(object):
         print("\t-h\t--help\t\tthis")
         print("\t-t\t--target\tfe:ed:de:ad:be:ef")
         print("\t\t--targets\tde:ad:be:ef:b0:ff,c0:33:b3:ff:ee:33")
-        print("\t-s\t--scan\t\tscan for mac addresses")
+        print("\t-s\t--scan\t\tscan for mac addresses/targets")
         print("\t-w\t--wifi\t\tuse wifi")
         print("\t-b\t--bt\t\tuse bluetooth")
         print("\t-i\t--interface\tcall supply after -w/-b")
         print("\t-a\t--adb\t\tuse adb")
         print("\t-d\t--device\tadb transport id")
         print("\t\t--devices\ttid1,tid2,tid5")
+        print("\t-m\t--mac-lookup\tlookup macs")
         exit()
 
     @staticmethod
@@ -77,6 +79,8 @@ class Configuration(object):
                     _c.iface_bt = args[i + 1]
                 elif args[i - 1] in ["-w", "--wifi"]:
                     _c.iface_wl = args[i + 1]
+            elif a in ["-m", "--mac-lookup"]:
+                _c.mac_lookup = True
             elif a in ["-h", "--help"]:
                 Configuration.help()
             i += 1

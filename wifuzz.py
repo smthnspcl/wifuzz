@@ -3,31 +3,28 @@
 from os import geteuid
 from sys import argv
 from time import sleep
+from terminaltables import AsciiTable
 
-from libs import Configuration
+from libs import Configuration, start_thread_kbi, create_mac_table
 
 
 def scan():
     if c.bt:
         from libs import BluetoothScanner
         bts = BluetoothScanner()
-        bts.start()
+        print("scanning for bluetooth macs")
+        start_thread_kbi(bts)
+        print(AsciiTable(create_mac_table("bluetooth", bts.found, c.mac_lookup)).table)
         # todo: collect macs and add to targets
     if c.wifi:
-        from libs import WiFiScanner, set_monitor_mode
+        from libs import WiFiScanner
         if not c.iface_wl:
             print("no wifi interface found")
             exit()
-        print("setting monitor mode")
-        # set_monitor_mode(c.iface_wl)
         wts = WiFiScanner(c.iface_wl)
-        try:
-            print("wifi: sniffing for macs")
-            wts.start()
-        except KeyboardInterrupt:
-            wts.stop()
-            print("\nresults:")
-            print(wts.found)
+        print("scanning for wifi macs")
+        start_thread_kbi(wts)
+        print(AsciiTable(create_mac_table("wifi", wts.found, c.mac_lookup)).table)
 
 
 def fuzz():
@@ -75,8 +72,19 @@ if __name__ == '__main__':
         print("i need privileges")
         exit()
 
+    if c.mac_lookup:
+        create_table_data("mac_lookup", ["ff:ff:ff:ff:ff:ff"])
+
+    if c.wifi:
+        from libs import set_monitor_mode
+        c.iface_wl = set_monitor_mode(c.iface_wl)
+
     if c.scan:
         scan()
 
     fuzz()
+
+    if c.wifi:
+        c.iface_wl = set_monitor_mode(c.iface_wl, False)
+
     print("done")

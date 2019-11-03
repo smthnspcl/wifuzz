@@ -6,6 +6,7 @@ from time import sleep
 from scapy.layers.dot11 import *
 from scapy.all import AsyncSniffer
 from netifaces import interfaces
+from progressbar import ProgressBar
 
 
 def get_interface():
@@ -16,12 +17,14 @@ def get_interface():
 
 
 def set_monitor_mode(interface, enable=True):
-    system("ip link set dev %s down" % interface)
     if enable:
-        system("iwconfig %s mode monitor" % interface)
+        print("enabling monitor mode on", interface)
+        system("airmon-ng start %s >/dev/null 2>&1" % interface)
+        return interface + "mon"
     else:
-        system("iwconfig %s mode managed" % interface)  # managed or auto for normal
-    system("ip link set dev %s up" % interface)
+        print("disabling monitor mode on", interface)
+        system("airmon-ng stop %s >/dev/null 2>&1" % interface)
+        return interface[0:-3]
 
 
 class WiFiFuzzer(Fuzzer):
@@ -37,14 +40,23 @@ class WiFiScanner(Scanner):
     daemon = False
     do_run = True
 
+    @staticmethod
+    def is_broadcast(addr):
+        return addr == "ff:ff:ff:ff:ff:ff"
+
     def callback(self, pdu):
-        a = pdu.addr1
-        print(a)
-        if a not in self.found:
-            self.found.append(a)
+        mcs = [pdu.addr1, pdu.addr2, pdu.addr3, pdu.addr4]
+        for m in mcs:
+            if m is None or self.is_broadcast(m):
+                continue
+            if m not in self.found:
+                self.found.append(m)
 
     def run(self):
         a = AsyncSniffer(iface=self.iface, prn=self.callback)
+        a.start()
+        c = ProgressBar()
         while self.do_run:
+            c.update(len(self.found))
             sleep(1)  # be nice to the cpu
         a.stop()
