@@ -5,7 +5,23 @@ from sys import argv
 from time import sleep
 from terminaltables import AsciiTable
 
-from libs import Configuration, start_thread_kbi, create_mac_table
+from libs import Configuration, start_thread_kbi, create_mac_table, validate_mac
+
+
+def choose_targets():
+    r = []
+    print("enter macs you want to target")
+    print("ctrl + c to start fuzzing")
+    try:
+        while True:
+            i = input("> ")
+            if not validate_mac(i):
+                print(i, "is not a mac address")
+            else:
+                r.append(i)
+    except KeyboardInterrupt:
+        print()
+        return r
 
 
 def scan():
@@ -63,6 +79,9 @@ def fuzz():
                 _.stop()
                 _.join()
             print("stopped")
+    else:
+        print("only adb error collection is implemented yet")
+        pass  # todo server/client stuff to monitor processes on other machines
 
 
 if __name__ == '__main__':
@@ -73,7 +92,7 @@ if __name__ == '__main__':
         exit()
 
     if c.mac_lookup:
-        create_table_data("mac_lookup", ["ff:ff:ff:ff:ff:ff"])
+        create_mac_table("mac_lookup", ["ff:ff:ff:ff:ff:ff"])
 
     if c.wifi:
         from libs import set_monitor_mode
@@ -81,6 +100,7 @@ if __name__ == '__main__':
 
     if c.scan:
         scan()
+        c.targets = choose_targets()
 
     fuzz()
 

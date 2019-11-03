@@ -3,3 +3,5 @@ netifaces
 mac_vendor_lookup
 terminaltables
 progressbar2
+pybluez
+pybluez[ble]

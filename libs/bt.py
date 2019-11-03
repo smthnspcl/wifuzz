@@ -28,9 +28,15 @@ class BluetoothScanner(Scanner):
         Scanner.__init__(self, iface)
 
     def callback(self, pdu):
-        print(pdu.summary())
+        pass  # not used
+
+    def scan_le(self, s):
+        a, u = s.sr(HCI_Hdr() /
+                    HCI_Command_Hdr() /
+                    HCI_Cmd_LE_Set_Scan_Enable(enable=True), verbose=False)
+        adverts = s.sniff()
+        print(adverts)
 
     def run(self):
         s = BluetoothHCISocket(self.iface)
-        d = s.sr(HCI_Hdr() / HCI_Command_Hdr() / HCI_Cmd_LE_Set_Scan_Enable(enable=False), verbose=False)
-        print(d)
+        a, u = s.sr(HCI_Hdr())
