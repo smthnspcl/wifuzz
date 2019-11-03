@@ -1,4 +1,5 @@
 from .wifi import get_interface as get_wifi_interface
+from .bt import get_interface as get_bt_interface
 
 
 class Configuration(object):
@@ -10,7 +11,7 @@ class Configuration(object):
     devices = []
     mac_lookup = False
 
-    iface_bt = 0
+    iface_bt = None
     iface_wl = None
 
     def __init__(self, **kwargs):
@@ -50,6 +51,8 @@ class Configuration(object):
         self.devices = self.filter_duplicates(self.devices)
         if self.iface_wl is None:
             self.iface_wl = get_wifi_interface()
+        if self.iface_bt is None:
+            self.iface_bt = get_bt_interface()
         # todo: check if bluetooth interface exists / find one
 
     @staticmethod

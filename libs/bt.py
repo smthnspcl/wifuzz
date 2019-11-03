@@ -2,10 +2,18 @@ from .fuzzer import Fuzzer
 from .scanner import Scanner
 
 from scapy.layers.bluetooth import *
+from pybt import Scanner as BTScanner
+from progressbar import ProgressBar
+from subprocess import check_output
+
+
+def get_interface():
+    o = check_output(["hciconfig"])
+    i = o.split(b":")[0]
+    return int(i[-1])
 
 
 class BluetoothFuzzer(Fuzzer):
-
     sock = None
     targets = []
     frame_combos = [
@@ -27,16 +35,14 @@ class BluetoothScanner(Scanner):
     def __init__(self, iface=0):
         Scanner.__init__(self, iface)
 
-    def callback(self, pdu):
-        pass  # not used
-
-    def scan_le(self, s):
-        a, u = s.sr(HCI_Hdr() /
-                    HCI_Command_Hdr() /
-                    HCI_Cmd_LE_Set_Scan_Enable(enable=True), verbose=False)
-        adverts = s.sniff()
-        print(adverts)
+    def callback(self, device):
+        if device.address not in self.found:
+            self.found.append(device.address)
 
     def run(self):
-        s = BluetoothHCISocket(self.iface)
-        a, u = s.sr(HCI_Hdr())
+        s = BTScanner()
+        b = ProgressBar()
+        while self.do_run:
+            for d in s.scan_for(3):
+                self.callback(d)
+            b.update(len(self.found))

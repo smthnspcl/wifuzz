@@ -27,11 +27,13 @@ def choose_targets():
 def scan():
     if c.bt:
         from libs import BluetoothScanner
-        bts = BluetoothScanner()
+        if not c.iface_bt:
+            print("no bluetooth interface found")
+            exit()
+        bts = BluetoothScanner(c.iface_bt)
         print("scanning for bluetooth macs")
         start_thread_kbi(bts)
         print(AsciiTable(create_mac_table("bluetooth", bts.found, c.mac_lookup)).table)
-        # todo: collect macs and add to targets
     if c.wifi:
         from libs import WiFiScanner
         if not c.iface_wl:

@@ -3,5 +3,4 @@ netifaces
 mac_vendor_lookup
 terminaltables
 progressbar2
-pybluez
-pybluez[ble]
+git+https://github.com/smthnspcl/pybt

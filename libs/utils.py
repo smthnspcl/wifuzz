@@ -17,17 +17,15 @@ def create_mac_table(key, lst, lookup=False):
     if lookup:
         td[0].append("vendor")
         m = MacLookup()
-    try:
-        for i in lst:
+
+    for i in lst:
+        try:
             if lookup:
                 td.append([i, m.lookup(i)])
             else:
                 td.append([i])
-    except KeyError:
-        pass
-    except Exception as e:
-        print(e)
-        pass
+        except Exception:
+            td.append([i, ""])
     return td
 
 
