@@ -22,16 +22,16 @@ class Configuration(object):
         print("usage: ./wifuzz.py {arguments}")
         print("\t{arguments}\t\t{example/hint}")
         print("\t-h\t--help\t\tthis")
-        print("\t-t\t--target\tfe:ed:de:ad:be:ef")
-        print("\t\t--targets\tde:ad:be:ef:b0:ff,c0:33:b3:ff:ee:33")
-        print("\t-s\t--scan\t\tscan for mac addresses/targets")
-        print("\t-w\t--wifi\t\tuse wifi")
-        print("\t-b\t--bt\t\tuse bluetooth")
-        print("\t-i\t--interface\tcall supply after -w/-b")
         print("\t-a\t--adb\t\tuse adb")
         print("\t-d\t--device\tadb transport id")
         print("\t\t--devices\ttid1,tid2,tid5")
-        print("\t-m\t--mac-lookup\tlookup macs")
+        print("\t-t\t--target\tfe:ed:de:ad:be:ef")
+        print("\t\t--targets\tde:ad:be:ef:b0:ff,c0:33:b3:ff:ee:33")
+        print("\t-w\t--wifi\t\tuse wifi")
+        print("\t-b\t--bt\t\tuse bluetooth")
+        print("\t-i\t--interface\tcall supply after -w/-b")
+        print("\t-s\t--scan\t\tscan for mac addresses/targets")
+        print("\t-m\t--mac-lookup\tlookup mac vendors")
         exit()
 
     @staticmethod
@@ -53,7 +53,6 @@ class Configuration(object):
             self.iface_wl = get_wifi_interface()
         if self.iface_bt is None:
             self.iface_bt = get_bt_interface()
-        # todo: check if bluetooth interface exists / find one
 
     @staticmethod
     def parse(args):
