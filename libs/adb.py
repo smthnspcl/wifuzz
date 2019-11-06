@@ -35,17 +35,22 @@ class ADB(Runnable):
                 self.name = self.name[0:-1]
 
     def get_wifi_mac(self):
-        cmd = ["adb", "shell", "iwconfig"]
+        cmd = ["adb", "shell", "ip", "link"]
         if self.device is not None:
             cmd.append("-d")
             cmd.append(self.device)
         print(cmd)
         adbp = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        print(adbp.stdout.read())
-        for m in adbp.stdout.readlines():
-            m = m.strip()
-            print(m)
+        i = 0
+        lns = adbp.stdout.readlines()
+        while i < len(lns):
+            m = str(lns[i].strip()).split(": ")
+            if len(m) > 2 and m[1].startswith("wl"):
+                self.mac_wifi = str(lns[i + 1].strip().split()[1])
+            i += 1
 
+    def get_bt_mac(self):
+        raise NotImplemented  # todo
 
     def get_macs(self):
         self.get_wifi_mac()
