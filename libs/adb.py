@@ -7,6 +7,9 @@ class ADB(Runnable):
     device = None
     crash_callback = None
 
+    mac_bt = None
+    mac_wifi = None
+
     def __init__(self, device=None, crash_callback=None):
         Runnable.__init__(self)
         self.device = device
@@ -30,6 +33,22 @@ class ADB(Runnable):
             self.name = line[5]
             if self.name.endswith(b":"):
                 self.name = self.name[0:-1]
+
+    def get_wifi_mac(self):
+        cmd = ["adb", "shell", "iwconfig"]
+        if self.device is not None:
+            cmd.append("-d")
+            cmd.append(self.device)
+        print(cmd)
+        adbp = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        print(adbp.stdout.read())
+        for m in adbp.stdout.readlines():
+            m = m.strip()
+            print(m)
+
+
+    def get_macs(self):
+        self.get_wifi_mac()
 
     def run(self) -> None:
         cmd = ["adb", "logcat"]

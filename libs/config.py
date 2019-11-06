@@ -36,10 +36,15 @@ class Configuration(object):
         print("\t-s\t--scan\t\tscan for mac addresses/targets")
         print("\t-m\t--mac-lookup\tlookup mac vendors")
         print("examples:")
+        print("sudo ./wifuzz.py -a -w -b")
+        print("\tonly one android device, finds target macs automatically, fuzzes wifi and bt")
         print("sudo ./wifuzz.py -a -w -t ff:ee:ee:dd:be:ef")
+        print("\tonly one android device, targets specified mac, fuzzes wifi")
         print("sudo ./wifuzz.py -m -s -w -b -a")
+        print("\tscans wifi and bt for macs, gets vendors for macs, only one android device, fuzzes wifi and bt")
         print("sudo ./wifuzz.py -w --targets fe:ee:ed:de:ea:ad,be:ee:ef:66:66:66 -w -i wlan0 -b -i hci0 -b \\"
               "                 42:00:66:66:66:66 -a -d 7ee96662")
+        print("\tfuzzes specified target macs, with specified bt and wifi interfaces, hooks specified android dev id")
         exit()
 
     @staticmethod
@@ -58,10 +63,12 @@ class Configuration(object):
         self.targets_wifi = self.filter_duplicates(self.targets_wifi)
         self.targets_bt = self.filter_duplicates(self.targets_bt)
         self.devices = self.filter_duplicates(self.devices)
-        if self.iface_wl is None:
-            self.iface_wl = get_wifi_interface()
-        if self.iface_bt is None:
-            self.iface_bt = get_bt_interface()
+        if self.wifi:
+            if self.iface_wl is None:
+                self.iface_wl = get_wifi_interface()
+        if self.bt:
+            if self.iface_bt is None:
+                self.iface_bt = get_bt_interface()
 
     @staticmethod
     def parse(args):

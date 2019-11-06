@@ -2,7 +2,6 @@ from .fuzzer import Fuzzer
 from .scanner import Scanner
 
 from scapy.layers.bluetooth import *
-from pybt import Scanner as BTScanner
 from progressbar import ProgressBar
 from subprocess import check_output
 
@@ -40,9 +39,14 @@ class BluetoothScanner(Scanner):
             self.found.append(device.address)
 
     def run(self):
-        s = BTScanner()
-        b = ProgressBar()
-        while self.do_run:
-            for d in s.scan_for(3):
-                self.callback(d)
-            b.update(len(self.found))
+        try:
+            from pybt import Scanner as BTScanner
+            s = BTScanner()
+            b = ProgressBar()
+            while self.do_run:
+                for d in s.scan_for(3):
+                    self.callback(d)
+                b.update(len(self.found))
+        except ImportError:
+            print("https://github.com/smthnspcl/pybt")
+            exit()
