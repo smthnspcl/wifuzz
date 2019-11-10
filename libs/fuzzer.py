@@ -26,9 +26,12 @@ class Fuzzer(Runnable):
                 p = p(addr1=target)  # dot11 packet
             for fp in fc[1:]:
                 p /= fuzz(fp())
+            print(p.show())
             self.f_send(p)
 
-    def run(self) -> None:
-        while self.do_run:
-            for t in self.targets:
-                self.fuzz(t)
+    def run(self):
+        for t in self.targets:
+            if t is None:
+                continue
+            print("fuzzing", t)
+            self.fuzz(t)

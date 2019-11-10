@@ -6,6 +6,31 @@ from time import sleep
 from terminaltables import AsciiTable
 
 from libs import Configuration, start_thread_kbi, create_mac_table, validate_mac
+from libs.runnable import Runnable
+
+
+class ADBFuzzer(Runnable):
+    adb_devices = None
+    fuzzers = []
+
+    def __init__(self, adb_devices, fuzzers):
+        Runnable.__init__(self)
+        self.adb_devices = adb_devices
+        self.fuzzers = fuzzers
+
+    def run(self) -> None:
+        for f in self.fuzzers:
+            f.start()
+        while self.do_run:
+            for ad in self.adb_devices.devices:
+                ad.start_logcat()
+                print(ad.crashes.show())
+            sleep(1)
+
+    def stop(self):
+        self.do_run = False
+        for ad in self.adb_devices.devices:
+            ad.stop_logcat()
 
 
 class Main(object):
@@ -49,33 +74,27 @@ class Main(object):
     @staticmethod
     def fuzz():
         if c.adb:
-            for d in c.adb_devices.devices:
-                print("starting logcat on device", d.id)
-                d.start_logcat()
-
-            f = []
+            f = ADBFuzzer(c.adb_devices, [])
             if c.wifi:
-                print("creating wifi fuzzer")
+                print("creating wifi fuzzer with interface", c.iface_wl)
                 from libs import WiFiFuzzer
-                f.append(WiFiFuzzer(c.iface_wl))
+                _ = WiFiFuzzer(c.iface_wl)
+                _.targets = c.targets_wifi
+                f.fuzzers.append(_)
             if c.bt:
-                print("creating bluetooth fuzzer")
+                print("creating bluetooth fuzzer with interface", c.iface_bt)
                 from libs import BluetoothFuzzer
-                f.append(BluetoothFuzzer(c.iface_bt))
-
-            for _ in f:
-                _.start()
+                _ = BluetoothFuzzer(c.iface_bt)
+                _.targets.append(c.targets_bt)
+                f.fuzzers.append(_)
 
             try:
-                while True:
-                    sleep(1)  # be nice to the cpu
+                print("running")
+                f.start()
+                f.join()
             except KeyboardInterrupt:
                 print("stopping..")
-                for s in c.adb_devices:
-                    s.stop_logcat()
-                for _ in f:
-                    _.stop()
-                    _.join()
+                f.stop()
                 print("stopped")
         else:
             print("only adb error collection is implemented yet")

@@ -15,3 +15,6 @@ class Runnable(Thread):
 
     def start(self) -> None:
         self.run()
+
+    def run(self) -> None:
+        raise NotImplemented

@@ -31,11 +31,12 @@ def set_monitor_mode(interface, enable=True):
 
 
 class WiFiFuzzer(Fuzzer):
-    targets = ["dc:0b:34:c4:8c:06"]
+    name = "WiFi Fuzzer"
+    targets = []
     frame_combos = [
-        [Dot11Beacon, Dot11Elt],
-        [Dot11Beacon],
-        [Dot11AssoReq, Dot11Elt, Dot11EltRates]
+        [Dot11, Dot11Beacon, Dot11Elt],
+        [Dot11, Dot11Beacon],
+        [Dot11, Dot11AssoReq, Dot11Elt, Dot11EltRates]
     ]
 
 

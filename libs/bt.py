@@ -13,6 +13,7 @@ def get_interface():
 
 
 class BluetoothFuzzer(Fuzzer):
+    name = "Bluetooth Fuzzer"
     sock = None
     targets = []
     frame_combos = [

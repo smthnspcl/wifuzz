@@ -62,7 +62,9 @@ class Configuration(object):
             self.help()
         if self.adb and self.adb_devices.size() == 0:
             self.adb_devices.get()
+            self.adb_devices.get_macs()
             for d in self.adb_devices.devices:
+                print(d.__dict__)
                 self.targets_wifi.append(d.mac_wifi)
                 self.targets_bt.append(d.mac_bt)
         if (len(self.targets_wifi) + len(self.targets_bt)) == 0 and not self.scan:

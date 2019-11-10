@@ -1,16 +1,22 @@
 from .runnable import Runnable
 
 from subprocess import Popen, PIPE
-from datetime import datetime
 
 
-class Crash(object):
-    timestamp = None
-    line = None
+class Crashes(object):
+    timeline = []
 
-    def __init__(self, line):
-        self.line = line
-        self.timestamp = datetime.now()
+    def add(self, line):
+        print(line)
+        for t in self.timeline:
+            if t.date != line.date and t.time != line.time:
+                self.timeline.append(line)
+                return True
+        return False
+
+    def show(self, last=10):
+        for i in self.timeline[-1 - last: -1]:
+            print(i.__dict__)
 
 
 class Device(object):
@@ -20,11 +26,12 @@ class Device(object):
     mac_wifi = None
     lc_session = None
 
-    crashes = []
+    crashes = None
 
     def __init__(self, device_id, name=None):
         self.id = str(device_id)
         self.name = str(name)
+        self.crashes = Crashes()
         self.lc_session = Logcat(self.id, self.crash_callback)
 
     def get_wifi_mac(self):
@@ -42,9 +49,8 @@ class Device(object):
             i += 1
 
     def crash_callback(self, line):
-        print(line.date, line.time, line.name)
-        print("\t", line.text)
-        self.crashes.append(line)
+        print(line)
+        self.crashes.add(line)
 
     def get_bt_mac(self):
         raise NotImplemented  # todo
@@ -54,7 +60,7 @@ class Device(object):
         # device.get_bt_mac()
 
     def start_logcat(self):
-        self.lc_session.start()
+        self.lc_session.run()
 
     def stop_logcat(self):
         self.lc_session.stop()
@@ -109,6 +115,7 @@ class Devices(object):
 class Logcat(Runnable):
     device = None
     crash_callback = None
+    lines = None
 
     def __init__(self, device, crash_callback=None):
         Runnable.__init__(self)
@@ -126,30 +133,30 @@ class Logcat(Runnable):
         def __init__(self, line):
             self.text = line
             line = line.split()
-            self.date = line[0]
-            self.time = line[1]
-            self.pid = line[2]
-            self.priority = line[4]
-            self.name = line[5]
-            if self.name.endswith(b":"):
+            self.date = str(line[0])
+            self.time = str(line[1])
+            self.pid = str(line[2])
+            self.priority = str(line[4])
+            self.name = str(line[5])
+            if self.name.endswith(":"):
                 self.name = self.name[0:-1]
 
-    def run(self) -> None:
+    def run(self):
         cmd = ["adb", "logcat"]
         if self.device is not None:
             cmd.append("-d")
             cmd.append(self.device)
         adbp = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        while self.do_run:
-            for l in adbp.stdout:
-                if l.startswith(b"---"):
-                    continue
-                line = Logcat.Line(l)
-                if line.priority in [b'W', b'E']:
-                    if self.crash_callback is not None:
-                        self.crash_callback(line)
-                # if b'System.err:' in l.text:
-                #     print(l.text)
+        self.lines = adbp.stdout.readlines()
+        for l in self.lines:
+            if l.startswith(b"---"):
+                continue
+            line = Logcat.Line(l)
+            if line.priority in [b'W', b'E']:
+                if self.crash_callback is not None:
+                    self.crash_callback(line)
+            # if b'System.err:' in l.text:
+            #     print(l.text)
 
 # interesting names
 # bt_sdp, bt_btif_sock_rfcomm, bt_btif, bt_vendor, bt_osi_thread
