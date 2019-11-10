@@ -4,15 +4,23 @@ from subprocess import Popen, PIPE
 
 
 class Crashes(object):
+    FILTER_DEBUG = ["D"]
+    FILTER_WARNING = ["W"]
+    FILTER_ERROR = ["E"]
+    FILTER_VERBOSE = FILTER_DEBUG + FILTER_WARNING + FILTER_ERROR
+
     timeline = []
+    filter_level = "D"
 
     def add(self, line):
         if line not in self.timeline:
             self.timeline.append(line)
 
     def show(self, last=10):
-        for i in self.timeline[-1 - last: -1]:
+        for i in self.timeline[-last: -1]:
             print(i.__dict__)
+            if i.priority == self.filter_level:
+                print(i.__dict__)
 
 
 class Device(object):
