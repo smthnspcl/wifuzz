@@ -48,23 +48,18 @@ class Main(object):
 
     @staticmethod
     def fuzz():
-        from libs.adb import ADB
-        adb_sessions = []
         if c.adb:
-            if len(c.devices) >= 0:
-                for d in c.devices:
-                    adb_sessions.append(ADB(d))
-            else:
-                adb_sessions.append(ADB())
-
-            for s in adb_sessions:
-                s.start()
+            for d in c.adb_devices.devices:
+                print("starting logcat on device", d.id)
+                d.start_logcat()
 
             f = []
             if c.wifi:
+                print("creating wifi fuzzer")
                 from libs import WiFiFuzzer
                 f.append(WiFiFuzzer(c.iface_wl))
             if c.bt:
+                print("creating bluetooth fuzzer")
                 from libs import BluetoothFuzzer
                 f.append(BluetoothFuzzer(c.iface_bt))
 
@@ -76,9 +71,8 @@ class Main(object):
                     sleep(1)  # be nice to the cpu
             except KeyboardInterrupt:
                 print("stopping..")
-                for s in adb_sessions:
-                    s.stop()
-                    s.join()
+                for s in c.adb_devices:
+                    s.stop_logcat()
                 for _ in f:
                     _.stop()
                     _.join()
@@ -89,11 +83,6 @@ class Main(object):
 
     @staticmethod
     def test():
-        from libs import ADB
-
-        a = ADB()
-        a.get_macs()
-
         exit()
 
 

@@ -1,5 +1,6 @@
 from .wifi import get_interface as get_wifi_interface
 from .bt import get_interface as get_bt_interface
+from .adb import Devices
 
 
 class Configuration(object):
@@ -9,7 +10,7 @@ class Configuration(object):
     mac_lookup = False
 
     adb = False
-    devices = []
+    adb_devices = None
 
     iface_bt = None
     iface_wl = None
@@ -19,6 +20,7 @@ class Configuration(object):
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+        self.adb_devices = Devices()
 
     @staticmethod
     def help():
@@ -42,7 +44,7 @@ class Configuration(object):
         print("\tonly one android device, targets specified mac, fuzzes wifi")
         print("sudo ./wifuzz.py -m -s -w -b -a")
         print("\tscans wifi and bt for macs, gets vendors for macs, only one android device, fuzzes wifi and bt")
-        print("sudo ./wifuzz.py -w --targets fe:ee:ed:de:ea:ad,be:ee:ef:66:66:66 -w -i wlan0 -b -i hci0 -b \\"
+        print("sudo ./wifuzz.py -w --targets fe:ee:ed:de:ea:ad,be:ee:ef:66:66:66 -w -i wlan0 -b -i hci0 -b \\\n"
               "                 42:00:66:66:66:66 -a -d 7ee96662")
         print("\tfuzzes specified target macs, with specified bt and wifi interfaces, hooks specified android dev id")
         exit()
@@ -58,11 +60,15 @@ class Configuration(object):
     def check(self):
         if not self.wifi and not self.bt:
             self.help()
+        if self.adb and self.adb_devices.size() == 0:
+            self.adb_devices.get()
+            for d in self.adb_devices.devices:
+                self.targets_wifi.append(d.mac_wifi)
+                self.targets_bt.append(d.mac_bt)
         if (len(self.targets_wifi) + len(self.targets_bt)) == 0 and not self.scan:
             self.help()
         self.targets_wifi = self.filter_duplicates(self.targets_wifi)
         self.targets_bt = self.filter_duplicates(self.targets_bt)
-        self.devices = self.filter_duplicates(self.devices)
         if self.wifi:
             if self.iface_wl is None:
                 self.iface_wl = get_wifi_interface()
@@ -95,9 +101,9 @@ class Configuration(object):
             elif a in ["-a", "--adb"]:
                 _c.adb = True
             elif a in ["-d", "--device"]:
-                _c.devices.append(args[i + 1])
+                _c.adb_devices.add_by_id(args[i + 1])
             elif a in ["--devices"]:
-                _c.devices += args[i + 1].split(",")
+                _c.adb_devices.add_by_ids(args[i + 1].split(","))
             elif a in ["-i", "--interface"]:
                 if args[i - 1] in ["-b", "--bt"]:
                     _c.iface_bt = args[i + 1]

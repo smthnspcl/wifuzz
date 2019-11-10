@@ -17,6 +17,9 @@ def get_interface():
 
 
 def set_monitor_mode(interface, enable=True):
+    if interface is None:
+        print("interface is none")
+        return None
     if enable:
         print("enabling monitor mode on", interface)
         system("airmon-ng start %s >/dev/null 2>&1" % interface)
