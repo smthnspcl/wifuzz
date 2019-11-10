@@ -24,7 +24,7 @@ class ADBFuzzer(Runnable):
         while self.do_run:
             for ad in self.adb_devices.devices:
                 ad.start_logcat()
-                print(ad.crashes.show())
+                ad.crashes.show()
             sleep(1)
 
     def stop(self):

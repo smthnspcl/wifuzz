@@ -7,12 +7,8 @@ class Crashes(object):
     timeline = []
 
     def add(self, line):
-        print(line)
-        for t in self.timeline:
-            if t.date != line.date and t.time != line.time:
-                self.timeline.append(line)
-                return True
-        return False
+        if line not in self.timeline:
+            self.timeline.append(line)
 
     def show(self, last=10):
         for i in self.timeline[-1 - last: -1]:
@@ -49,7 +45,6 @@ class Device(object):
             i += 1
 
     def crash_callback(self, line):
-        print(line)
         self.crashes.add(line)
 
     def get_bt_mac(self):
@@ -60,7 +55,7 @@ class Device(object):
         # device.get_bt_mac()
 
     def start_logcat(self):
-        self.lc_session.run()
+        self.lc_session.start()
 
     def stop_logcat(self):
         self.lc_session.stop()
@@ -115,9 +110,8 @@ class Devices(object):
 class Logcat(Runnable):
     device = None
     crash_callback = None
-    lines = None
 
-    def __init__(self, device, crash_callback=None):
+    def __init__(self, device, crash_callback):
         Runnable.__init__(self)
         self.device = device
         self.crash_callback = crash_callback
@@ -147,16 +141,10 @@ class Logcat(Runnable):
             cmd.append("-d")
             cmd.append(self.device)
         adbp = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        self.lines = adbp.stdout.readlines()
-        for l in self.lines:
+        for l in adbp.stdout.readlines():
             if l.startswith(b"---"):
                 continue
-            line = Logcat.Line(l)
-            if line.priority in [b'W', b'E']:
-                if self.crash_callback is not None:
-                    self.crash_callback(line)
-            # if b'System.err:' in l.text:
-            #     print(l.text)
+            self.crash_callback(Logcat.Line(l))
 
 # interesting names
 # bt_sdp, bt_btif_sock_rfcomm, bt_btif, bt_vendor, bt_osi_thread
