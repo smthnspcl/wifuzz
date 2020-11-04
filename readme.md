@@ -8,7 +8,7 @@ wanted my own wireless fuzzer
 [mac_vendor_lookup](https://pypi.org/project/mac-vendor-lookup/) for ...<br>
 [terminaltables](https://pypi.org/project/terminaltables/) to make stuff look fancy<br>
 [progressbar2](https://pypi.org/project/progressbar2/) for fanciness<br>
-[pybt](https://github.com/smthnspcl/pybt) for bluetooth stuff<br>
+[pybt](https://github.com/nbdy/pybt) for bluetooth stuff<br>
 
 ### how to ...
 #### ... get started
